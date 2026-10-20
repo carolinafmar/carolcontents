@@ -2,12 +2,26 @@
 import os
 import subprocess
 import tempfile
+import urllib.request
 
 from PIL import Image, ImageDraw, ImageFont
 
 W, H, FPS = 1080, 1920, 30
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FONTS = os.path.join(ROOT, "fonts")
+# As tipografias são descarregadas do Google Fonts na primeira utilização.
+FONTS = os.path.join(tempfile.gettempdir(), "carolcontents-fonts")
+FONT_URLS = {
+    "BodoniModa.ttf": "https://github.com/google/fonts/raw/main/ofl/bodonimoda/BodoniModa%5Bopsz,wght%5D.ttf",
+    "BodoniModa-Italic.ttf": "https://github.com/google/fonts/raw/main/ofl/bodonimoda/BodoniModa-Italic%5Bopsz,wght%5D.ttf",
+    "Jost.ttf": "https://github.com/google/fonts/raw/main/ofl/jost/Jost%5Bwght%5D.ttf",
+}
+
+
+def _font_path(file):
+    path = os.path.join(FONTS, file)
+    if not os.path.exists(path):
+        os.makedirs(FONTS, exist_ok=True)
+        urllib.request.urlretrieve(FONT_URLS[file], path)
+    return path
 
 PISTACHE = (207, 224, 210)
 ROSA = (196, 128, 142)
@@ -16,7 +30,7 @@ CINZA = (94, 94, 94)
 
 
 def _font(file, size, **axes):
-    f = ImageFont.truetype(os.path.join(FONTS, file), size)
+    f = ImageFont.truetype(_font_path(file), size)
     if axes:
         try:
             names = [a["name"].decode() if isinstance(a["name"], bytes) else a["name"]
