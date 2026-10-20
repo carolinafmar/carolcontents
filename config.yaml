@@ -1,0 +1,44 @@
+# CarolContents — configuração
+# Só precisas de mexer neste ficheiro. As chaves secretas ficam nos "Secrets" do GitHub.
+
+drive:
+  # Pasta do Google Drive que contém as exportações do Instagram (ou as stories soltas).
+  # Por omissão: a tua pasta "CarolContents". Partilha-a com o e-mail da service account.
+  root_folder_id: "179nOhLgl0_XXfjsz8NHSDHDLxaxGLvzd"
+  # Só aceita exportações desta conta (ignora, por exemplo, instagram-saboresditalia-...).
+  export_prefix: "instagram-carolcontents"
+  # Nomes das pastas onde estão as stories dentro das exportações.
+  stories_folder_names: ["stories"]
+  # true = qualquer imagem/vídeo dentro da pasta raiz conta como story (pasta simples, sem exportação).
+  flat: false
+  # Ignora stories anteriores a este mês (AAAAMM). Deixa vazio para usar tudo.
+  start_month: ""
+  # Subpasta criada no Drive onde ficam o reel, a legenda e as notas de cada edição.
+  editions_folder_name: "Edições"
+
+edition:
+  min_items: 3          # abaixo disto, a edição espera pela semana seguinte
+  max_items: 10         # o resto passa para a edição seguinte
+  min_confidence: 0.6   # achados abaixo disto não entram; ficam numa lista "por rever"
+  hashtags: ["#carolcontents", "#curadoria", "#achados"]
+
+reel:
+  image_seconds: 2.6
+  video_seconds: 3.2
+  cover_seconds: 2.2
+  end_seconds: 2.0
+  link_text: "Todos os links na bio"
+
+site:
+  # Endereço público da página de links (GitHub Pages). Atualiza depois de ativares o Pages.
+  public_url: "https://carolinafmar.github.io/carolcontents"
+  title: "CarolContents"
+  tagline: "Coisas que me prenderam o olhar, com os links para as encontrares."
+
+claude:
+  model: "claude-sonnet-5-5"
+
+instagram:
+  # "rascunho": o reel e a legenda ficam no Drive para publicares tu (e escolheres o áudio).
+  # "automatico": publica diretamente no Instagram (precisa de IG_ACCESS_TOKEN e IG_USER_ID).
+  publish_mode: "rascunho"
