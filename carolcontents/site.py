@@ -1,0 +1,74 @@
+"""Gera a página pública de links (docs/index.html), servida pelo GitHub Pages."""
+import html
+import os
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DOCS = os.path.join(ROOT, "docs")
+
+CSS = """
+:root{--pistache:#CFE0D2;--rosa:#C4808E;--preto:#000;--cinza:#5E5E5E;--linha:#E6E6E6;--papel:#fff}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--papel);color:var(--preto);font:400 17px/1.55 'Jost',system-ui,sans-serif}
+a{color:inherit}
+header{background:var(--pistache);padding:64px 16px 48px;text-align:center}
+header h1{font:400 clamp(40px,12.4vw,104px)/0.95 'Bodoni Moda',Didot,serif;margin:0;letter-spacing:-0.01em}
+header p{max-width:30ch;margin:20px auto 0;color:var(--cinza);font-size:16px}
+main{max-width:640px;margin:0 auto;padding:16px 20px 80px}
+section{padding-top:48px}
+h2{font:italic 400 34px/1.1 'Bodoni Moda',Didot,serif;margin:0}
+time{display:block;color:var(--cinza);font-size:15px;margin:6px 0 12px}
+ol{list-style:none;margin:0;padding:0}
+li a{display:grid;grid-template-columns:2.2rem 72px 1fr;gap:16px;align-items:center;
+  padding:18px 0;border-top:1px solid var(--linha);text-decoration:none}
+li:last-child a{border-bottom:1px solid var(--linha)}
+.n{font:italic 400 24px/1 'Bodoni Moda',Didot,serif;color:var(--rosa)}
+img{width:72px;height:128px;object-fit:cover;display:block;background:var(--pistache)}
+.nome{font:400 22px/1.2 'Bodoni Moda',Didot,serif;display:block}
+.marca{color:var(--cinza);font-size:15px;display:block;margin-top:2px}
+.desc{font-size:15px;display:block;margin-top:6px}
+.abrir{display:inline-block;margin-top:10px;font-size:15px;text-decoration:underline;text-underline-offset:3px}
+li a:hover .abrir,li a:focus-visible .abrir{color:var(--rosa)}
+a:focus-visible{outline:2px solid var(--preto);outline-offset:4px}
+footer{max-width:640px;margin:0 auto;padding:0 20px 56px;color:var(--cinza);font-size:14px}
+.vazio{padding:48px 0;color:var(--cinza)}
+"""
+
+
+def _e(s):
+    return html.escape(s or "", quote=True)
+
+
+def render(editions, cfg):
+    s = cfg["site"]
+    secs = []
+    for ed in sorted(editions, key=lambda e: e["number"], reverse=True):
+        rows = []
+        for n, it in enumerate(ed["items"], 1):
+            thumb = f'<img src="{_e(it["thumb"])}" alt="" loading="lazy">' if it.get("thumb") else "<span></span>"
+            brand = it.get("brand") if it.get("brand", "").lower() not in it["name"].lower() else ""
+            rows.append(
+                f'<li><a href="{_e(it["url"])}" target="_blank" rel="noopener">'
+                f'<span class="n">{n:02d}</span>{thumb}'
+                f'<span><span class="nome">{_e(it["name"])}</span>'
+                + (f'<span class="marca">{_e(brand)}</span>' if brand else "")
+                + (f'<span class="desc">{_e(it.get("description"))}</span>' if it.get("description") else "")
+                + '<span class="abrir">Abrir</span></span></a></li>')
+        secs.append(f'<section id="edicao-{ed["number"]}"><h2>Edição Nº {ed["number"]}</h2>'
+                    f'<time>{_e(ed["date_label"])}</time><ol>{"".join(rows)}</ol></section>')
+    body = "".join(secs) or '<p class="vazio">A primeira edição está a caminho.</p>'
+    page = f"""<!doctype html><html lang="pt-PT"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{_e(s["title"])}</title><meta name="description" content="{_e(s["tagline"])}">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=Jost:wght@400&display=swap" rel="stylesheet">
+<style>{CSS}</style></head><body>
+<header><h1>{_e(s["title"])}</h1><p>{_e(s["tagline"])}</p></header>
+<main>{body}</main>
+<footer>Os números de cada edição são os mesmos do reel.</footer>
+</body></html>"""
+    os.makedirs(DOCS, exist_ok=True)
+    with open(os.path.join(DOCS, "index.html"), "w", encoding="utf-8") as fh:
+        fh.write(page)
+    open(os.path.join(DOCS, ".nojekyll"), "w").close()
+    return os.path.join(DOCS, "index.html")
